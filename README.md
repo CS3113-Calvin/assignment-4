@@ -2,14 +2,12 @@
 
 Game description:
 
-https://opengameart.org/content/jump-landing-sound
-"Strength of the Titans" Kevin MacLeod (incompetech.com)
-Licensed under Creative Commons: By Attribution 4.0 License
-http://creativecommons.org/licenses/by/4.0/
+* Simple platformer game where the player must defeat 3 enemies to win.
 
 Attributions:
-* [Space assets](https://axassets.itch.io/spaceship-simple-assets)
-* [Mission failed/accomplished text](https://www.coolgenerator.com/text-image-generator)
+* [Background music](https://incompetech.com/music/royalty-free/music.html) ("Strength of the Titans" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/)
+* [Jump sound effect](https://opengameart.org/content/jump-landing-sound)
+* [Game image assets](https://pixelfrog-assets.itch.io/kings-and-pigs)
 
 ## [Original Description](https://github.com/sebastianromerocruz/CS3113-material/blob/2239ed6bb37870855715ec29d784536490a4be1e/assignments/project_4.md)
 
