@@ -308,7 +308,7 @@ void initialise()
     // Walking
     g_game_state.enemies[0].m_walking[g_game_state.enemies[0].LEFT] = new int[6] { 0, 1, 2, 3, 4, 5 };
     g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT] = new int[6] { 6, 7, 8, 9, 10, 11 };
-    g_game_state.enemies[0].m_animation_indices = g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT];  // start looking left
+    g_game_state.enemies[0].m_animation_indices = g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT];  // start looking right
     g_game_state.enemies[0].m_animation_frames = 6;
     g_game_state.enemies[0].m_animation_index = 0;
     g_game_state.enemies[0].m_animation_time = 0.0f;
