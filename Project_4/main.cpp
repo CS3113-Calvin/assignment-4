@@ -283,7 +283,7 @@ void initialise()
     g_game_state.player->m_walking[g_game_state.player->UP] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
     g_game_state.player->m_walking[g_game_state.player->DOWN] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
 
-    g_game_state.player->m_animation_indices = g_game_state.player->m_walking[g_game_state.player->RIGHT];  // start George looking left
+    g_game_state.player->m_animation_indices = g_game_state.player->m_walking[g_game_state.player->RIGHT];  // start player looking right
     g_game_state.player->m_animation_frames = 8;
     g_game_state.player->m_animation_index = 0;
     g_game_state.player->m_animation_time = 0.0f;
