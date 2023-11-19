@@ -14,12 +14,9 @@
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
 #define ENEMY_COUNT 3
-// #define LEVEL1_WIDTH 14
-// #define LEVEL1_HEIGHT 5
 #define LEVEL1_WIDTH 25
 #define LEVEL1_HEIGHT 19
 #define GRAVITY -9.81f
-// #define GRAVITY -9.81f*1.3f
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -58,9 +55,6 @@ struct GameState
 const int   WINDOW_WIDTH = 640,
             WINDOW_HEIGHT = 480;
 
-// const float BG_RED = 0.1922f,
-//             BG_BLUE = 0.549f,
-//             BG_GREEN = 0.9059f,
 const float BG_RED = 63.0f/255.0f,
             BG_BLUE = 56.0f/255.0f,
             BG_GREEN = 80.0f/255.0f,
@@ -78,30 +72,17 @@ const char  V_SHADER_PATH[] = "shaders/vertex_textured.glsl",
 
 const float MILLISECONDS_IN_SECOND = 1000.0;
 
-const char  SPRITESHEET_FILEPATH[]  = "assets/images/george_0.png",
-            KING_RUN_FILEPATH[]          = "assets/images/01-King Human/Run (78x58).png",
-            PIG_RUN_FILEPATH[]          = "assets/images/03-Pig/run.png",
-            PIG_IDLE_FILEPATH[]          = "assets/images/03-Pig/idle.png",
-            PIG_JUMP_FILEPATH[]          = "assets/images/03-Pig/Jump (34x28).png",
-            // MAP_TILESET_FILEPATH[]  = "assets/images/tileset.png",
+const char  KING_RUN_FILEPATH[]     = "assets/images/king_spritesheet_(78x58).png",
+            PIG_RUN_FILEPATH[]      = "assets/images/pig_spritesheet_(34x28).png",
+            PIG_JUMP_FILEPATH[]     = "assets/images/pig_jump_(34x28).png",
             MAP_TILESET_FILEPATH[]  = "assets/images/terrain.png",
             BGM_FILEPATH[]          = "assets/audio/Strength of the Titans.mp3",
-            // BGM_FILEPATH[]          = "assets/audio/dooblydoo.mp3",
             JUMP_SFX_FILEPATH[]     = "assets/audio/jumpland.wav";
-            // JUMP_SFX_FILEPATH[]     = "assets/audio/bounce.wav";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
 const GLint TEXTURE_BORDER = 0;
 
-// unsigned int LEVEL_1_DATA[] =
-// {
-//     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-//     0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0,
-//     1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
-//     2, 2, 1, 1, 0, 0, 1, 1, 1, 2, 2, 2, 2, 2,
-//     2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2
-// };
 unsigned int LEVEL_1_BACKGROUND[] =
 {
 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40,
@@ -285,7 +266,6 @@ void initialise()
     GLuint map_texture_id = load_texture(MAP_TILESET_FILEPATH);
     g_game_state.map = new Map(LEVEL1_WIDTH, LEVEL1_HEIGHT, LEVEL_1_DATA, map_texture_id, 1.0f, 19, 13);
     g_game_state.background = new Map(LEVEL1_WIDTH, LEVEL1_HEIGHT, LEVEL_1_BACKGROUND, map_texture_id, 1.0f, 19, 13);
-    // g_game_state.map = new Map(LEVEL1_WIDTH, LEVEL1_HEIGHT, LEVEL_1_DATA, map_texture_id, 1.0f, 4, 1);
 
     // ————— GEORGE SET-UP ————— //
     // Existing
@@ -296,15 +276,10 @@ void initialise()
     g_game_state.player->set_speed(4.0f);
     g_game_state.player->set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
     g_game_state.player->m_texture_id = load_texture(KING_RUN_FILEPATH);
-    // g_game_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
 
     // Walking
-    // g_game_state.player->m_walking[g_game_state.player->LEFT] = new int[4] { 1, 5, 9, 13 };
-    // g_game_state.player->m_walking[g_game_state.player->RIGHT] = new int[4] { 3, 7, 11, 15 };
-    // g_game_state.player->m_walking[g_game_state.player->UP] = new int[4] { 2, 6, 10, 14 };
-    // g_game_state.player->m_walking[g_game_state.player->DOWN] = new int[4] { 0, 4, 8, 12 };
-    g_game_state.player->m_walking[g_game_state.player->LEFT] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
     g_game_state.player->m_walking[g_game_state.player->RIGHT] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
+    g_game_state.player->m_walking[g_game_state.player->LEFT] = new int[8] { 8, 9, 10, 11, 12, 13, 14, 15 };
     g_game_state.player->m_walking[g_game_state.player->UP] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
     g_game_state.player->m_walking[g_game_state.player->DOWN] = new int[8] { 0, 1, 2, 3, 4, 5, 6, 7 };
 
@@ -313,11 +288,9 @@ void initialise()
     g_game_state.player->m_animation_index = 0;
     g_game_state.player->m_animation_time = 0.0f;
     g_game_state.player->m_animation_cols = 8;
-    g_game_state.player->m_animation_rows = 1;
+    g_game_state.player->m_animation_rows = 2;
     g_game_state.player->set_height(0.9f);
     g_game_state.player->set_width(0.6f);
-    // g_game_state.player->set_height(0.8f);
-    // g_game_state.player->set_width(0.8f);
     g_game_state.player->set_scale(2.3f);
 
     // Jumping
@@ -332,19 +305,15 @@ void initialise()
     g_game_state.enemies[0].set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
     g_game_state.enemies[0].set_speed(2.5f);
     g_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
-
     // Walking
     g_game_state.enemies[0].m_walking[g_game_state.enemies[0].LEFT] = new int[6] { 0, 1, 2, 3, 4, 5 };
-    // g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT] = new int[4] { 3, 7, 11, 15 };
-    // g_game_state.enemies[0].m_walking[g_game_state.enemies[0].UP] = new int[4] { 2, 6, 10, 14 };
-    // g_game_state.enemies[0].m_walking[g_game_state.enemies[0].DOWN] = new int[4] { 0, 4, 8, 12 };
-
-    g_game_state.enemies[0].m_animation_indices = g_game_state.enemies[0].m_walking[g_game_state.enemies[0].LEFT];  // start looking left
+    g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT] = new int[6] { 6, 7, 8, 9, 10, 11 };
+    g_game_state.enemies[0].m_animation_indices = g_game_state.enemies[0].m_walking[g_game_state.enemies[0].RIGHT];  // start looking left
     g_game_state.enemies[0].m_animation_frames = 6;
     g_game_state.enemies[0].m_animation_index = 0;
     g_game_state.enemies[0].m_animation_time = 0.0f;
     g_game_state.enemies[0].m_animation_cols = 6;
-    g_game_state.enemies[0].m_animation_rows = 1;
+    g_game_state.enemies[0].m_animation_rows = 2;
     g_game_state.enemies[0].set_height(0.8f);
     g_game_state.enemies[0].set_width(0.8f);
     g_game_state.enemies[0].set_scale(1.1f);
@@ -364,7 +333,17 @@ void initialise()
 
     // Guarder
     g_game_state.enemies[2].set_entity_type(ENEMY);
-    g_game_state.enemies[2].m_texture_id = load_texture(PIG_JUMP_FILEPATH);
+      // animations
+    g_game_state.enemies[2].m_texture_id = load_texture(PIG_RUN_FILEPATH);
+    g_game_state.enemies[2].m_walking[g_game_state.enemies[0].LEFT] = new int[6] { 0, 1, 2, 3, 4, 5 };
+    g_game_state.enemies[2].m_walking[g_game_state.enemies[0].RIGHT] = new int[6] { 6, 7, 8, 9, 10, 11 };
+    g_game_state.enemies[2].m_animation_indices = g_game_state.enemies[0].m_walking[g_game_state.enemies[0].LEFT];  // start looking left
+    g_game_state.enemies[2].m_animation_frames = 6;
+    g_game_state.enemies[2].m_animation_index = 0;
+    g_game_state.enemies[2].m_animation_time = 0.0f;
+    g_game_state.enemies[2].m_animation_cols = 6;
+    g_game_state.enemies[2].m_animation_rows = 2;
+      //
     g_game_state.enemies[2].set_position(glm::vec3(7.0f, -12.0f, 0.0f));
     g_game_state.enemies[2].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
     g_game_state.enemies[2].set_movement(glm::vec3(0.0f));
@@ -417,7 +396,7 @@ void process_input()
 
             case SDLK_SPACE:
                 // Jump
-                if (g_game_state.player->m_collided_bottom)
+                if (g_game_state.player->m_collided_bottom && g_game_state.status == RUNNING)
                 {
                     g_game_state.player->m_is_jumping = true;
                     Mix_PlayChannel(-1, g_game_state.jump_sfx, 0);
@@ -433,6 +412,10 @@ void process_input()
         }
     }
 
+    if (g_game_state.status != RUNNING) {
+        // Don't change direction when game is over
+        return;
+    }
     const Uint8* key_state = SDL_GetKeyboardState(NULL);
 
     if (key_state[SDL_SCANCODE_LEFT])
@@ -473,24 +456,17 @@ void update()
     while (delta_time >= FIXED_TIMESTEP)
     {
         g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, g_game_state.enemies, ENEMY_COUNT, g_game_state.map);
+        // Player is dead, game is lost
         if (g_game_state.player->get_is_alive() == false) {
-            // g_game_is_running = false;
-            // say you lose using draw_text function
-            // glm::vec3 position = g_game_state.player->get_position();
-            // draw_text(&g_shader_program, g_game_state.player->m_texture_id, "You lose!", 640.0f, 5.0f, glm::vec3(position.x, position.y + 4.0f, 0.0f));
-            // std::cout << "You lose!\n";
-
-            // set lose game condition
-            // break;
             g_game_state.status = LOSE;
         }
-        // g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, NULL);
+
+        // Check if all enemies are dead
         bool all_enemies_dead = true;
         for (int i = 0; i < ENEMY_COUNT; i++) {
             g_game_state.enemies[i].update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, g_game_state.map);
             if (g_game_state.enemies[i].get_is_alive()) {
                 all_enemies_dead = false;
-                // std::cout << "Enemy " << i << " is alive\n";
             }
         }
         if (all_enemies_dead) {
@@ -517,6 +493,7 @@ void render()
     g_game_state.map->render(&g_shader_program);
     for (int i = 0; i < ENEMY_COUNT; i++)    g_game_state.enemies[i].render(&g_shader_program);
     g_game_state.player->render(&g_shader_program);
+
     // render win/lose text
     if (g_game_state.status == WIN) {
         glm::vec3 position = g_game_state.player->get_position();
@@ -535,7 +512,7 @@ void shutdown()
 {
     SDL_Quit();
 
-    delete[] g_game_state.enemies;
+    delete[]  g_game_state.enemies;
     delete    g_game_state.player;
     delete    g_game_state.map;
     delete    g_game_state.background;
