@@ -293,7 +293,7 @@ void initialise()
     g_game_state.player->set_entity_type(PLAYER);
     g_game_state.player->set_position(glm::vec3(4.0f, -12.0f, 0.0f));
     g_game_state.player->set_movement(glm::vec3(0.0f));
-    g_game_state.player->set_speed(2.5f);
+    g_game_state.player->set_speed(4.0f);
     g_game_state.player->set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
     g_game_state.player->m_texture_id = load_texture(KING_RUN_FILEPATH);
     // g_game_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);

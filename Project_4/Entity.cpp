@@ -241,20 +241,20 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
             float y_distance = fabs(m_position.y - collidable_entity->get_position().y);
             float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->get_height() / 2.0f));
             float y_collidable_entity_velocity = collidable_entity->get_velocity().y;
-            if (m_velocity.y > 0 || y_collidable_entity_velocity < 0) {
-                // m_position.y -= y_overlap;
-                m_velocity.y = 0;
-                m_collided_top = true;
-                std::cout << "collided_top with enemy" << std::endl;
-                m_is_alive = false;  // lose game
-            }
-            else if (m_velocity.y < 0 || y_collidable_entity_velocity > 0) {
+            if (m_velocity.y < 0 || y_collidable_entity_velocity > 0) {
                 // m_position.y += y_overlap;
                 m_velocity.y = 0;
                 m_collided_bottom = true;
                 std::cout << "collided_bottom with enemy" << std::endl;
                 collidable_entity->m_is_active = false;  // turn off enemy
                 collidable_entity->set_is_alive(false);  // turn off enemy
+            }
+            else if (m_velocity.y > 0 || y_collidable_entity_velocity < 0) {
+                // m_position.y -= y_overlap;
+                m_velocity.y = 0;
+                m_collided_top = true;
+                std::cout << "collided_top with enemy" << std::endl;
+                m_is_alive = false;  // lose game
             }
         }
     }
