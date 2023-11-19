@@ -496,11 +496,11 @@ void render() {
     // render win/lose text
     if (g_game_state.status == WIN) {
         glm::vec3 position = g_game_state.player->get_position();
-        draw_text(&g_shader_program, g_font_texture_id, "You win!", 1.5f, -0.7f, glm::vec3(position.x - 4.0f, position.y + 4.0f, 0.0f));
+        draw_text(&g_shader_program, g_font_texture_id, "You win!", 1.5f, -0.7f, glm::vec3(position.x - 3.0f, position.y + 4.0f, 0.0f));
         std::cout << "You win!\n";
     } else if (g_game_state.status == LOSE) {
         glm::vec3 position = g_game_state.player->get_position();
-        draw_text(&g_shader_program, g_font_texture_id, "You lose!", 1.5f, -0.7f, glm::vec3(position.x - 4.0f, position.y + 4.0f, 0.0f));
+        draw_text(&g_shader_program, g_font_texture_id, "You lose!", 1.5f, -0.7f, glm::vec3(position.x - 3.5f, position.y + 4.0f, 0.0f));
         std::cout << "You lose!\n";
     }
 
