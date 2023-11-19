@@ -240,15 +240,16 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
             }
             float y_distance = fabs(m_position.y - collidable_entity->get_position().y);
             float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->get_height() / 2.0f));
-            if (m_velocity.y > 0) {
-                m_position.y -= y_overlap;
+            float y_collidable_entity_velocity = collidable_entity->get_velocity().y;
+            if (m_velocity.y > 0 || y_collidable_entity_velocity < 0) {
+                // m_position.y -= y_overlap;
                 m_velocity.y = 0;
                 m_collided_top = true;
                 std::cout << "collided_top with enemy" << std::endl;
                 m_is_alive = false;  // lose game
             }
-            else if (m_velocity.y < 0) {
-                m_position.y += y_overlap;
+            else if (m_velocity.y < 0 || y_collidable_entity_velocity > 0) {
+                // m_position.y += y_overlap;
                 m_velocity.y = 0;
                 m_collided_bottom = true;
                 std::cout << "collided_bottom with enemy" << std::endl;
@@ -269,15 +270,16 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
         {
             float x_distance = fabs(m_position.x - collidable_entity->get_position().x);
             float x_overlap = fabs(x_distance - (m_width / 2.0f) - (collidable_entity->get_width() / 2.0f));
-            if (m_velocity.x > 0) {
-                m_position.x -= x_overlap;
+            float x_collidable_entity_velocity = collidable_entity->get_velocity().x;
+            if (m_velocity.x > 0 || x_collidable_entity_velocity < 0) {
+                // m_position.x -= x_overlap;
                 m_velocity.x = 0;
                 m_collided_right = true;
                 std::cout << "collided_right with enemy" << std::endl;
                 m_is_alive = false;  // lose game
             }
-            else if (m_velocity.x < 0) {
-                m_position.x += x_overlap;
+            else if (m_velocity.x < 0 || x_collidable_entity_velocity > 0) {
+                // m_position.x += x_overlap;
                 m_velocity.x = 0;
                 m_collided_left = true;
                 std::cout << "collided_left with enemy" << std::endl;

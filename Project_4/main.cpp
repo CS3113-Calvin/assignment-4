@@ -13,7 +13,7 @@
 #define LOG(argument) std::cout << argument << '\n'
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
-#define ENEMY_COUNT 2
+#define ENEMY_COUNT 3
 // #define LEVEL1_WIDTH 14
 // #define LEVEL1_HEIGHT 5
 #define LEVEL1_WIDTH 25
@@ -39,8 +39,11 @@
 #include "Map.h"
 
 // ————— GAME STATE ————— //
+enum GameStatus    { RUNNING, WIN, LOSE  };
 struct GameState
 {
+    GameStatus status;
+
     Entity* player;
     Entity* enemies;
 
@@ -55,9 +58,12 @@ struct GameState
 const int   WINDOW_WIDTH = 640,
             WINDOW_HEIGHT = 480;
 
-const float BG_RED = 0.1922f,
-            BG_BLUE = 0.549f,
-            BG_GREEN = 0.9059f,
+// const float BG_RED = 0.1922f,
+//             BG_BLUE = 0.549f,
+//             BG_GREEN = 0.9059f,
+const float BG_RED = 63.0f/255.0f,
+            BG_BLUE = 56.0f/255.0f,
+            BG_GREEN = 80.0f/255.0f,
             BG_OPACITY = 1.0f;
 
 const int   VIEWPORT_X = 0,
@@ -146,6 +152,7 @@ GameState g_game_state;
 
 SDL_Window* g_display_window;
 bool g_game_is_running  = true;
+GLint g_font_texture_id;
 
 ShaderProgram g_shader_program;
 glm::mat4 g_view_matrix, g_projection_matrix;
@@ -178,6 +185,69 @@ GLuint load_texture(const char* filepath)
     stbi_image_free(image);
 
     return texture_id;
+}
+
+const int FONTBANK_SIZE = 16;
+void draw_text(ShaderProgram *program, GLuint font_texture_id, std::string text, float screen_size, float spacing, glm::vec3 position)
+{
+    // Scale the size of the fontbank in the UV-plane
+    // We will use this for spacing and positioning
+    float width = 1.0f / FONTBANK_SIZE;
+    float height = 1.0f / FONTBANK_SIZE;
+
+    // Instead of having a single pair of arrays, we'll have a series of pairs—one for each character
+    // Don't forget to include <vector>!
+    std::vector<float> vertices;
+    std::vector<float> texture_coordinates;
+
+    // For every character...
+    for (int i = 0; i < text.size(); i++) {
+        // 1. Get their index in the spritesheet, as well as their offset (i.e. their position
+        //    relative to the whole sentence)
+        int spritesheet_index = (int) text[i];  // ascii value of character
+        float offset = (screen_size + spacing) * i;
+        
+        // 2. Using the spritesheet index, we can calculate our U- and V-coordinates
+        float u_coordinate = (float) (spritesheet_index % FONTBANK_SIZE) / FONTBANK_SIZE;
+        float v_coordinate = (float) (spritesheet_index / FONTBANK_SIZE) / FONTBANK_SIZE;
+
+        // 3. Inset the current pair in both vectors
+        vertices.insert(vertices.end(), {
+            offset + (-0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (0.5f * screen_size), -0.5f * screen_size,
+            offset + (0.5f * screen_size), 0.5f * screen_size,
+            offset + (-0.5f * screen_size), -0.5f * screen_size,
+        });
+
+        texture_coordinates.insert(texture_coordinates.end(), {
+            u_coordinate, v_coordinate,
+            u_coordinate, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate + width, v_coordinate + height,
+            u_coordinate + width, v_coordinate,
+            u_coordinate, v_coordinate + height,
+        });
+    }
+
+    // 4. And render all of them using the pairs
+    glm::mat4 model_matrix = glm::mat4(1.0f);
+    model_matrix = glm::translate(model_matrix, position);
+    
+    program->set_model_matrix(model_matrix);
+    glUseProgram(program->get_program_id());
+    
+    glVertexAttribPointer(program->get_position_attribute(), 2, GL_FLOAT, false, 0, vertices.data());
+    glEnableVertexAttribArray(program->get_position_attribute());
+    glVertexAttribPointer(program->get_tex_coordinate_attribute(), 2, GL_FLOAT, false, 0, texture_coordinates.data());
+    glEnableVertexAttribArray(program->get_tex_coordinate_attribute());
+    
+    glBindTexture(GL_TEXTURE_2D, font_texture_id);
+    glDrawArrays(GL_TRIANGLES, 0, (int) (text.size() * 6));
+    
+    glDisableVertexAttribArray(program->get_position_attribute());
+    glDisableVertexAttribArray(program->get_tex_coordinate_attribute());
 }
 
 void initialise()
@@ -245,7 +315,7 @@ void initialise()
     g_game_state.player->m_animation_cols = 8;
     g_game_state.player->m_animation_rows = 1;
     g_game_state.player->set_height(0.9f);
-    g_game_state.player->set_width(0.7f);
+    g_game_state.player->set_width(0.6f);
     // g_game_state.player->set_height(0.8f);
     // g_game_state.player->set_width(0.8f);
     g_game_state.player->set_scale(2.3f);
@@ -285,9 +355,7 @@ void initialise()
     // Jumper
     g_game_state.enemies[1].set_entity_type(ENEMY);
     g_game_state.enemies[1].m_texture_id = load_texture(PIG_JUMP_FILEPATH);
-    g_game_state.enemies[1].set_position(glm::vec3(10.0f, -15.0f, 0.0f));
-    g_game_state.enemies[1].set_movement(glm::vec3(0.0f, 1.0f, 0.0f));
-    g_game_state.enemies[1].set_speed(2.5f);
+    g_game_state.enemies[1].set_position(glm::vec3(16.0f, -8.0f, 0.0f));
     g_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
     g_game_state.enemies[1].set_height(0.8f);
     g_game_state.enemies[1].set_width(0.8f);
@@ -295,6 +363,23 @@ void initialise()
     g_game_state.enemies[1].set_ai_type(JUMPER);
 
     // Guarder
+    g_game_state.enemies[2].set_entity_type(ENEMY);
+    g_game_state.enemies[2].m_texture_id = load_texture(PIG_JUMP_FILEPATH);
+    g_game_state.enemies[2].set_position(glm::vec3(7.0f, -12.0f, 0.0f));
+    g_game_state.enemies[2].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
+    g_game_state.enemies[2].set_movement(glm::vec3(0.0f));
+    g_game_state.enemies[2].set_speed(1.5f);
+    g_game_state.enemies[2].set_height(0.8f);
+    g_game_state.enemies[2].set_width(0.6f);
+    g_game_state.enemies[2].set_scale(1.1f);
+    g_game_state.enemies[2].set_ai_type(GUARD);
+    g_game_state.enemies[2].set_ai_state(IDLE);
+
+    // Font
+    g_font_texture_id = load_texture("assets/fonts/font1.png");
+
+    // GameStatus
+    g_game_state.status = RUNNING;
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -370,6 +455,9 @@ void process_input()
 
 void update()
 {
+    if (g_game_state.status != RUNNING) {
+        return;
+    }
     float ticks = (float)SDL_GetTicks() / MILLISECONDS_IN_SECOND;
     float delta_time = ticks - g_previous_ticks;
     g_previous_ticks = ticks;
@@ -386,9 +474,15 @@ void update()
     {
         g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, g_game_state.enemies, ENEMY_COUNT, g_game_state.map);
         if (g_game_state.player->get_is_alive() == false) {
-            g_game_is_running = false;
+            // g_game_is_running = false;
+            // say you lose using draw_text function
+            // glm::vec3 position = g_game_state.player->get_position();
+            // draw_text(&g_shader_program, g_game_state.player->m_texture_id, "You lose!", 640.0f, 5.0f, glm::vec3(position.x, position.y + 4.0f, 0.0f));
+            // std::cout << "You lose!\n";
+
             // set lose game condition
-            break;
+            // break;
+            g_game_state.status = LOSE;
         }
         // g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, NULL);
         bool all_enemies_dead = true;
@@ -402,7 +496,7 @@ void update()
         if (all_enemies_dead) {
             // set win game
             std::cout << "You win!\n";
-            g_game_is_running = false;
+            g_game_state.status = WIN;
         }
         delta_time -= FIXED_TIMESTEP;
     }
@@ -423,6 +517,16 @@ void render()
     g_game_state.map->render(&g_shader_program);
     for (int i = 0; i < ENEMY_COUNT; i++)    g_game_state.enemies[i].render(&g_shader_program);
     g_game_state.player->render(&g_shader_program);
+    // render win/lose text
+    if (g_game_state.status == WIN) {
+        glm::vec3 position = g_game_state.player->get_position();
+        draw_text(&g_shader_program, g_font_texture_id, "You win!", 1.5f, -0.7f, glm::vec3(position.x-4.0f, position.y + 4.0f, 0.0f));
+        std::cout << "You win!\n";
+    } else if (g_game_state.status == LOSE) {
+        glm::vec3 position = g_game_state.player->get_position();
+        draw_text(&g_shader_program, g_font_texture_id, "You lose!", 1.5f, -0.7f, glm::vec3(position.x-4.0f, position.y + 4.0f, 0.0f));
+        std::cout << "You lose!\n";
+    }
 
     SDL_GL_SwapWindow(g_display_window);
 }
@@ -444,7 +548,7 @@ int main(int argc, char* argv[])
 {
     initialise();
 
-    while (g_game_is_running )
+    while ( g_game_is_running )
     {
         process_input();
         update();
