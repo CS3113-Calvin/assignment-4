@@ -8,6 +8,8 @@ Attributions:
 * [Background music](https://incompetech.com/music/royalty-free/music.html) ("Strength of the Titans" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/)
 * [Jump sound effect](https://opengameart.org/content/jump-landing-sound)
 * [Game image assets](https://pixelfrog-assets.itch.io/kings-and-pigs)
+* [Sprite sheet packer](https://www.codeandweb.com/free-sprite-sheet-packer)
+* [Tile map editor](http://riskylab.com/tilemap/)
 
 ## [Original Description](https://github.com/sebastianromerocruz/CS3113-material/blob/2239ed6bb37870855715ec29d784536490a4be1e/assignments/project_4.md)
 
