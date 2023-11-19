@@ -85,6 +85,14 @@ void Entity::ai_activate(Entity* player)
         ai_guard(player);
         break;
 
+    case JUMPER:
+        ai_jump();
+        break;
+    
+    case PATROLLER:
+        ai_patrol(m_min_x, m_max_x);
+        break;
+
     default:
         break;
     }
@@ -120,7 +128,26 @@ void Entity::ai_guard(Entity* player)
 }
 
 void Entity::ai_jump() {
+    // std::cout << "jumping" << std::endl;
+    // std::cout << "collided_bottom: " << std::boolalpha << m_collided_bottom << std::endl;
 
+    if (m_collided_bottom) {
+        m_velocity.y = 5.0f;
+    }
+
+    // std::cout << "velocity: " << m_velocity.x << ", " << m_velocity.y << std::endl;
+    // std::cout << "collided_bottom: " << std::boolalpha << m_collided_bottom << std::endl;
+
+}
+
+void Entity::ai_patrol(float min_x, float max_x) {
+    // std::cout << "min_x: " << min_x << std::endl;
+    if (m_position.x < min_x) {
+        m_movement = glm::vec3(1.0f, 0.0f, 0.0f);
+    }
+    else if (m_position.x > max_x) {
+        m_movement = glm::vec3(-1.0f, 0.0f, 0.0f);
+    }
 }
 
 
@@ -132,8 +159,6 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
     m_collided_bottom = false;
     m_collided_left = false;
     m_collided_right = false;
-
-    if (m_entity_type == ENEMY) ai_activate(player);
 
     if (m_animation_indices != NULL)
     {
@@ -155,18 +180,38 @@ void Entity::update(float delta_time, Entity* player, Entity* objects, int objec
         }
     }
 
+    // if (objects == NULL) {
+    //     std::cout << "position: " << m_position.x << ", " << m_position.y << std::endl;
+    //     std::cout << "movement: " << m_movement.x << ", " << m_movement.y << std::endl;
+    //     std::cout << "velocity: " << m_velocity.x << ", " << m_velocity.y << std::endl;
+    //     std::cout << "acceleration: " << m_acceleration.x << ", " << m_acceleration.y << std::endl;
+    // }
+    // if (m_ai_type == JUMPER) {
+    //     std::cout << "velocity outside: " << m_velocity.x << ", " << m_velocity.y << std::endl;
+    // }
+
     m_velocity.x = m_movement.x * m_speed;
+    // m_velocity.y = m_movement.y * m_speed;
     m_velocity += m_acceleration * delta_time;
 
     // We make two calls to our check_collision methods, one for the collidable objects and one for
     // the map.
     m_position.y += m_velocity.y * delta_time;
-    check_collision_y(objects, object_count);
     check_collision_y(map);
+    check_collision_y(objects, object_count);
 
     m_position.x += m_velocity.x * delta_time;
-    check_collision_x(objects, object_count);
     check_collision_x(map);
+    check_collision_x(objects, object_count);
+
+    if (m_entity_type == ENEMY) ai_activate(player);
+    // if (m_ai_type == JUMPER) {
+    //     // print collision status
+    //     std::cout << "collided_bottom: " << std::boolalpha << m_collided_bottom << std::endl;
+    //     std::cout << "collided_top: " << std::boolalpha << m_collided_top << std::endl;
+    //     std::cout << "collided_left: " << std::boolalpha << m_collided_left << std::endl;
+    //     std::cout << "collided_right: " << std::boolalpha << m_collided_right << std::endl;        
+    // }
 
     if (m_is_jumping)
     {
@@ -190,17 +235,25 @@ void const Entity::check_collision_y(Entity* collidable_entities, int collidable
 
         if (check_collision(collidable_entity))
         {
+            if (m_entity_type == PLAYER) {
+                std::cout << "velocity" << m_velocity.x << ", " << m_velocity.y << std::endl;
+            }
             float y_distance = fabs(m_position.y - collidable_entity->get_position().y);
             float y_overlap = fabs(y_distance - (m_height / 2.0f) - (collidable_entity->get_height() / 2.0f));
             if (m_velocity.y > 0) {
                 m_position.y -= y_overlap;
                 m_velocity.y = 0;
                 m_collided_top = true;
+                std::cout << "collided_top with enemy" << std::endl;
+                m_is_alive = false;  // lose game
             }
             else if (m_velocity.y < 0) {
                 m_position.y += y_overlap;
                 m_velocity.y = 0;
                 m_collided_bottom = true;
+                std::cout << "collided_bottom with enemy" << std::endl;
+                collidable_entity->m_is_active = false;  // turn off enemy
+                collidable_entity->set_is_alive(false);  // turn off enemy
             }
         }
     }
@@ -220,11 +273,15 @@ void const Entity::check_collision_x(Entity* collidable_entities, int collidable
                 m_position.x -= x_overlap;
                 m_velocity.x = 0;
                 m_collided_right = true;
+                std::cout << "collided_right with enemy" << std::endl;
+                m_is_alive = false;  // lose game
             }
             else if (m_velocity.x < 0) {
                 m_position.x += x_overlap;
                 m_velocity.x = 0;
                 m_collided_left = true;
+                std::cout << "collided_left with enemy" << std::endl;
+                m_is_alive = false;  // lose game
             }
         }
     }
@@ -315,6 +372,7 @@ void const Entity::check_collision_x(Map* map)
 
 void Entity::render(ShaderProgram* program)
 {
+    if (!m_is_active) return;
     program->set_model_matrix(m_model_matrix);
 
     if (m_animation_indices != NULL)

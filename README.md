@@ -2,6 +2,10 @@
 
 Game description:
 
+https://opengameart.org/content/jump-landing-sound
+"Strength of the Titans" Kevin MacLeod (incompetech.com)
+Licensed under Creative Commons: By Attribution 4.0 License
+http://creativecommons.org/licenses/by/4.0/
 
 Attributions:
 * [Space assets](https://axassets.itch.io/spaceship-simple-assets)

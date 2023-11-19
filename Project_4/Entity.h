@@ -1,13 +1,14 @@
 #include "Map.h"
 
 enum EntityType { PLATFORM, PLAYER, ENEMY   };
-enum AIType     { WALKER, GUARD             };
+enum AIType     { WALKER, GUARD, PATROLLER, JUMPER             };
 enum AIState    { WALKING, IDLE, ATTACKING  };
 
 class Entity
 {
 private:
     bool m_is_active = true;
+    bool m_is_alive = true;
 
     // ––––– ANIMATION ––––– //
     int* m_animation_right = NULL, // move to the right
@@ -36,6 +37,10 @@ private:
 
 
 public:
+    // patrol bounds
+    float m_min_x = 0.0f;
+    float m_max_x = 0.0f;
+
     // ————— STATIC VARIABLES ————— //
     static const int    SECONDS_PER_FRAME = 4;
     static const int    LEFT    = 0,
@@ -97,6 +102,7 @@ public:
     void ai_walk();
     void ai_guard(Entity* player);
     void ai_jump();
+    void ai_patrol(float min_x, float max_x);
 
     void activate() { m_is_active = true; };
     void deactivate() { m_is_active = false; };
@@ -114,6 +120,7 @@ public:
     int        const get_width()          const { return m_width;           };
     int        const get_height()         const { return m_height;          };
     float      const get_scale()          const { return m_scale;           };
+    bool       const get_is_alive()       const { return m_is_alive;        };
 
     // ————— SETTERS ————— //
     void const set_entity_type(EntityType new_entity_type)  { m_entity_type = new_entity_type;      };
@@ -128,4 +135,5 @@ public:
     void const set_width(float new_width)                   { m_width = new_width;                  };
     void const set_height(float new_height)                 { m_height = new_height;                };
     void const set_scale(float new_scale)                   { m_scale = new_scale;                  };
+    void const set_is_alive(bool new_is_alive)              { m_is_alive = new_is_alive;            };
 };

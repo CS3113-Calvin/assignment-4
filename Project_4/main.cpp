@@ -1,13 +1,25 @@
+/**
+* Author: Calvin Tian
+* Assignment: Rise of the AI
+* Date due: 2023-11-18, 11:59pm
+* I pledge that I have completed this assignment without
+* collaborating with anyone else, in conformance with the
+* NYU School of Engineering Policies and Procedures on
+* Academic Misconduct.
+**/
+
 #define GL_SILENCE_DEPRECATION
 #define STB_IMAGE_IMPLEMENTATION
 #define LOG(argument) std::cout << argument << '\n'
 #define GL_GLEXT_PROTOTYPES 1
 #define FIXED_TIMESTEP 0.0166666f
-#define ENEMY_COUNT 1
+#define ENEMY_COUNT 2
 // #define LEVEL1_WIDTH 14
 // #define LEVEL1_HEIGHT 5
 #define LEVEL1_WIDTH 25
 #define LEVEL1_HEIGHT 19
+#define GRAVITY -9.81f
+// #define GRAVITY -9.81f*1.3f
 
 #ifdef _WINDOWS
 #include <GL/glew.h>
@@ -64,10 +76,13 @@ const char  SPRITESHEET_FILEPATH[]  = "assets/images/george_0.png",
             KING_RUN_FILEPATH[]          = "assets/images/01-King Human/Run (78x58).png",
             PIG_RUN_FILEPATH[]          = "assets/images/03-Pig/run.png",
             PIG_IDLE_FILEPATH[]          = "assets/images/03-Pig/idle.png",
+            PIG_JUMP_FILEPATH[]          = "assets/images/03-Pig/Jump (34x28).png",
             // MAP_TILESET_FILEPATH[]  = "assets/images/tileset.png",
             MAP_TILESET_FILEPATH[]  = "assets/images/terrain.png",
-            BGM_FILEPATH[]          = "assets/audio/dooblydoo.mp3",
-            JUMP_SFX_FILEPATH[]     = "assets/audio/bounce.wav";
+            BGM_FILEPATH[]          = "assets/audio/Strength of the Titans.mp3",
+            // BGM_FILEPATH[]          = "assets/audio/dooblydoo.mp3",
+            JUMP_SFX_FILEPATH[]     = "assets/audio/jumpland.wav";
+            // JUMP_SFX_FILEPATH[]     = "assets/audio/bounce.wav";
 
 const int NUMBER_OF_TEXTURES = 1;
 const GLint LEVEL_OF_DETAIL = 0;
@@ -209,7 +224,7 @@ void initialise()
     g_game_state.player->set_position(glm::vec3(4.0f, -12.0f, 0.0f));
     g_game_state.player->set_movement(glm::vec3(0.0f));
     g_game_state.player->set_speed(2.5f);
-    g_game_state.player->set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    g_game_state.player->set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
     g_game_state.player->m_texture_id = load_texture(KING_RUN_FILEPATH);
     // g_game_state.player->m_texture_id = load_texture(SPRITESHEET_FILEPATH);
 
@@ -243,10 +258,10 @@ void initialise()
     g_game_state.enemies = new Entity[ENEMY_COUNT];
     g_game_state.enemies[0].set_entity_type(ENEMY);
     g_game_state.enemies[0].m_texture_id = load_texture(PIG_RUN_FILEPATH);
-    g_game_state.enemies[0].set_position(glm::vec3(6.0f, -12.0f, 0.0f));
-    g_game_state.enemies[0].set_movement(glm::vec3(5.0f));
-    // g_game_state.enemies[0].set_speed(2.5f);
-    // g_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, -9.81f, 0.0f));
+    g_game_state.enemies[0].set_position(glm::vec3(10.0f, -15.0f, 0.0f));
+    g_game_state.enemies[0].set_movement(glm::vec3(1.0f, 0.0f, 0.0f));
+    g_game_state.enemies[0].set_speed(2.5f);
+    g_game_state.enemies[0].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
 
     // Walking
     g_game_state.enemies[0].m_walking[g_game_state.enemies[0].LEFT] = new int[6] { 0, 1, 2, 3, 4, 5 };
@@ -260,11 +275,26 @@ void initialise()
     g_game_state.enemies[0].m_animation_time = 0.0f;
     g_game_state.enemies[0].m_animation_cols = 6;
     g_game_state.enemies[0].m_animation_rows = 1;
-    g_game_state.enemies[0].set_height(0.5f);
-    g_game_state.enemies[0].set_width(0.5f);
+    g_game_state.enemies[0].set_height(0.8f);
+    g_game_state.enemies[0].set_width(0.8f);
     g_game_state.enemies[0].set_scale(1.1f);
-    // g_game_state.enemies[0].update(0, g_state.player, g_state.platforms, PLATFORM_COUNT);
+    g_game_state.enemies[0].m_min_x = 8.0f;
+    g_game_state.enemies[0].m_max_x = 14.0f;
+    g_game_state.enemies[0].set_ai_type(PATROLLER);
 
+    // Jumper
+    g_game_state.enemies[1].set_entity_type(ENEMY);
+    g_game_state.enemies[1].m_texture_id = load_texture(PIG_JUMP_FILEPATH);
+    g_game_state.enemies[1].set_position(glm::vec3(10.0f, -15.0f, 0.0f));
+    g_game_state.enemies[1].set_movement(glm::vec3(0.0f, 1.0f, 0.0f));
+    g_game_state.enemies[1].set_speed(2.5f);
+    g_game_state.enemies[1].set_acceleration(glm::vec3(0.0f, GRAVITY, 0.0f));
+    g_game_state.enemies[1].set_height(0.8f);
+    g_game_state.enemies[1].set_width(0.8f);
+    g_game_state.enemies[1].set_scale(1.1f);
+    g_game_state.enemies[1].set_ai_type(JUMPER);
+
+    // Guarder
 
     // Audio
     Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 4096);
@@ -355,9 +385,25 @@ void update()
     while (delta_time >= FIXED_TIMESTEP)
     {
         g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, g_game_state.enemies, ENEMY_COUNT, g_game_state.map);
+        if (g_game_state.player->get_is_alive() == false) {
+            g_game_is_running = false;
+            // set lose game condition
+            break;
+        }
         // g_game_state.player->update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, NULL);
-        for (int i = 0; i < ENEMY_COUNT; i++) g_game_state.enemies[i].update(0, NULL, NULL, 0, g_game_state.map);
-        // for (int i = 0; i < ENEMY_COUNT; i++) g_game_state.enemies[i].update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, g_game_state.map);
+        bool all_enemies_dead = true;
+        for (int i = 0; i < ENEMY_COUNT; i++) {
+            g_game_state.enemies[i].update(FIXED_TIMESTEP, g_game_state.player, NULL, 0, g_game_state.map);
+            if (g_game_state.enemies[i].get_is_alive()) {
+                all_enemies_dead = false;
+                // std::cout << "Enemy " << i << " is alive\n";
+            }
+        }
+        if (all_enemies_dead) {
+            // set win game
+            std::cout << "You win!\n";
+            g_game_is_running = false;
+        }
         delta_time -= FIXED_TIMESTEP;
     }
 
